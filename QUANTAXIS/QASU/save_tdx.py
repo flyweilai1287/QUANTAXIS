@@ -539,14 +539,14 @@ def QA_SU_save_stock_xdxr(client=DATABASE, ui_log=None, ui_progress=None):
         __saving_work(stock_list[i_], coll)
 
 
-def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None):
+def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None,stock_list=[]):
     """save stock_min
 
     Keyword Arguments:
         client {[type]} -- [description] (default: {DATABASE})
     """
-
-    stock_list = QA_fetch_get_stock_list().code.unique().tolist()
+    if len(stock_list)==0:
+        stock_list = QA_fetch_get_stock_list().code.unique().tolist()
     coll = client.stock_min
     coll.create_index(
         [

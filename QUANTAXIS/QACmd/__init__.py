@@ -323,6 +323,9 @@ class CLI(cmd.Cmd):
                 QA_SU_save_stock_list('tdx')
                 QA_SU_save_index_list('tdx')
                 # QA_SU_save_stock_block('tdx')
+            elif len(arg) == 2 and arg[0] == 'min':
+                QA_SU_save_stock_min('tdx',stock_list=arg[1].split(','))
+
             elif len(arg) == 1 and arg[0] in ['X', 'x']:
                 if QA_Setting().client.quantaxis.user_list.find(
                     {'username': 'admin'}).count() == 0:

@@ -225,7 +225,7 @@ def QA_SU_save_option_commodity_day(engine, client=DATABASE):
     engine.QA_SU_save_option_commodity_day(client=client)
 
 
-def QA_SU_save_stock_min(engine, client=DATABASE):
+def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[]):
     """save stock_min
 
     Arguments:
@@ -236,7 +236,7 @@ def QA_SU_save_stock_min(engine, client=DATABASE):
     """
 
     engine = select_save_engine(engine)
-    engine.QA_SU_save_stock_min(client=client)
+    engine.QA_SU_save_stock_min(client=client,stock_list=stock_list)
 
 
 def QA_SU_save_index_day(engine, client=DATABASE):
