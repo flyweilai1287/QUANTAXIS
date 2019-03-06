@@ -55,7 +55,7 @@ def init_fetcher():
 
 
 def ping(ip, port=7709, type_='stock'):
-    api = TdxHq_API()
+    api = TdxHq_API(auto_retry=True)  # 增加auto_retry=True参数，表示如果服务器连接断开或者其它的异常情况下，为了保证在偶发的连接断开下自动重连并重新请求数据 2019-03-06
     apix = TdxExHq_API()
     __time1 = datetime.datetime.now()
     try:
