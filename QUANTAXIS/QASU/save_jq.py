@@ -7,6 +7,7 @@ import pandas as pd
 import pymongo
 
 import QUANTAXIS as QA
+from QUANTAXIS.QAFetch.QAJQdata import QA_fetch_industry_stocks, get_finance_bank_indicator, QA_fetch_get_stock_industry
 from QUANTAXIS.QAFetch.QATdx import QA_fetch_get_stock_list
 from QUANTAXIS.QAUtil import (DATABASE, QA_util_date_stamp,
                               QA_util_get_real_date, QA_util_log_info,
@@ -14,6 +15,7 @@ from QUANTAXIS.QAUtil import (DATABASE, QA_util_date_stamp,
                               trade_date_sse)
 
 TRADE_HOUR_END = 17
+import jqdatasdk
 
 
 def now_time():
@@ -36,13 +38,6 @@ def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None):
     聚宽实现方式
     save current day's stock_min data
     """
-    # 导入聚宽模块且进行登录
-    try:
-        import jqdatasdk
-        # 请自行将 JQUSERNAME 和 JQUSERPASSWD 修改为自己的账号密码
-        jqdatasdk.auth("JQUSERNAME", "JQUSERPASSWD")
-    except:
-        raise ModuleNotFoundError
 
     # 股票代码格式化
     code_list = list(
@@ -206,6 +201,149 @@ def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None):
         QA_util_log_info(" ERROR CODE \n ", ui_log=ui_log)
         QA_util_log_info(err, ui_log=ui_log)
 
+def QA_SU_save_finance_bank_indicator(client=DATABASE, ui_log=None, ui_progress=None):
+    """
+    保存银行的专项指标
+    """
+    # 股票代码格式化
+    code_list = QA_fetch_industry_stocks('801192')
+    # code_list = ['600000.XSHG']
+
+    coll = client.bank_indicator
+    coll.create_index([
+        ("code", pymongo.ASCENDING),
+        ("statDate", pymongo.ASCENDING)
+    ])
+    err = []
+
+    def __saving_work(code,statDate, coll):
+        QA_util_log_info(
+            "##JOB_bank_indicator Now Saving bank_indicator ==== {}".format(code), ui_log=ui_log)
+        try:
+            col_filter = {"code": str(code),'statDate':statDate}
+            ref_ = coll.find(col_filter)
+            end_time = str(now_time())[0:19]
+            if coll.count_documents(col_filter) > 0:
+                pass
+            else:
+                QA_util_log_info(
+                    "##JOB_bank_indicator.Now Saving {} == {}".format(
+                        str(code)[0:6],
+                        end_time),
+                        ui_log=ui_log,
+                    )
+                __data=get_finance_bank_indicator(code=code,statDate=statDate)
+                if len(__data)>=1:
+                    coll.insert_many(QA_util_to_json_from_pandas(__data))
+        except Exception as e:
+            QA_util_log_info(e, ui_log=ui_log)
+            err.append(code)
+            QA_util_log_info(err, ui_log=ui_log)
+
+    # __saving_work(code_list[0],coll)
+    # # 聚宽之多允许三个线程连接
+    executor = ThreadPoolExecutor(max_workers=2)
+    res = {
+        executor.submit(__saving_work, code_list[i_],str(j_+2000), coll) for j_ in range(20)
+        for i_ in range(len(code_list))
+    }
+    count = 0
+    for i_ in concurrent.futures.as_completed(res):
+        QA_util_log_info(
+            'The {} of Total {}'.format(count,
+                                        len(code_list)*20),
+            ui_log=ui_log
+        )
+
+        strProgress = "DOWNLOAD PROGRESS {} ".format(
+            str(float(count / len(code_list)/20 * 100))[0:4] + "%")
+        intProgress = int(count / len(code_list) * 10000.0)
+
+        QA_util_log_info(
+            strProgress,
+            ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=intProgress
+        )
+        count = count + 1
+    if len(err) < 1:
+        QA_util_log_info("SUCCESS", ui_log=ui_log)
+    else:
+        QA_util_log_info(" ERROR CODE \n ", ui_log=ui_log)
+        QA_util_log_info(err, ui_log=ui_log)
+
+
+
+def QA_SU_save_industry_stocks(client=DATABASE, ui_log=None, ui_progress=None):
+    """
+    保存银行的专项指标
+    """
+    '''
+    1.得到所有的行业体系
+    2.
+    '''
+
+    # 股票代码格式化
+    code_list = list(
+        map(
+            lambda x: x + ".XSHG" if x[0] == "6" else x + ".XSHE",
+            QA.QA_fetch_stock_list().code.unique().tolist(),
+        ))
+    coll = client.stock_list
+    err = []
+
+    def __saving_work(code,coll):
+        QA_util_log_info(
+            "##JOB_stock_list_industry Now Saving stock_list ==== {}".format(code), ui_log=ui_log)
+        try:
+            col_filter = {"code": str(code)[0:6]}
+            end_time = str(now_time())[0:19]
+            coll.find_one_and_update({'code': str(code)[0:6]}, {'$set': {'industry': QA_fetch_get_stock_industry(code,end_time).get(code)}})
+            QA_util_log_info(
+                    "##JOB_bank_indicator.Now Saving {} == {}".format(
+                        str(code)[0:6],
+                        end_time),
+                        ui_log=ui_log,
+                    )
+
+        except Exception as e:
+            QA_util_log_info(e, ui_log=ui_log)
+            err.append(code)
+            QA_util_log_info(err, ui_log=ui_log)
+
+    # __saving_work(code_list[0],coll)
+    # # 聚宽之多允许三个线程连接
+    executor = ThreadPoolExecutor(max_workers=2)
+    res = {
+        executor.submit(__saving_work, code_list[i_], coll)
+        for i_ in range(len(code_list))
+    }
+    count = 0
+    for i_ in concurrent.futures.as_completed(res):
+        QA_util_log_info(
+            'The {} of Total {}'.format(count,
+                                        len(code_list)),
+            ui_log=ui_log
+        )
+
+        strProgress = "DOWNLOAD PROGRESS {} ".format(
+            str(float(count / len(code_list) * 100))[0:4] + "%")
+        intProgress = int(count / len(code_list) * 10000.0)
+
+        QA_util_log_info(
+            strProgress,
+            ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=intProgress
+        )
+        count = count + 1
+    if len(err) < 1:
+        QA_util_log_info("SUCCESS", ui_log=ui_log)
+    else:
+        QA_util_log_info(" ERROR CODE \n ", ui_log=ui_log)
+        QA_util_log_info(err, ui_log=ui_log)
 
 if __name__ == "__main__":
-    QA_SU_save_stock_min()
+    # QA_SU_save_stock_min()
+    # QA_SU_save_finance_bank_indicator()
+    QA_SU_save_industry_stocks()

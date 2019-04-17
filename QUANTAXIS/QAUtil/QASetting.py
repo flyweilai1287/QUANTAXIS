@@ -200,6 +200,11 @@ class QA_Setting():
         DATABASE = self.client
         return self
 
+    def get_jq_auth(self):
+        config = configparser.ConfigParser()
+        if os.path.exists(CONFIGFILE_PATH):
+            config.read(CONFIGFILE_PATH)
+        return config.get('JOINQUANT', 'jq_username'),config.get('JOINQUANT', 'jq_password')
 
 QASETTING = QA_Setting()
 DATABASE = QASETTING.client.quantaxis

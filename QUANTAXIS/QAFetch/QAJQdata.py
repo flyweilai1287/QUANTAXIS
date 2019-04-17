@@ -1,15 +1,99 @@
 # coding:utf-8
+from jqdatasdk import bank_indicator, security_indicator, insurance_indicator, indicator
 
+from QUANTAXIS.QAUtil import QASETTING
 
-try: 
+try:
     import jqdatasdk
-    jqdatasdk.auth(input('account:'),input('password:'))
+    # jqdatasdk.auth(input('account:'),input('password:'))
+    username,password=QASETTING.get_jq_auth()
+    jqdatasdk.auth(username, password)
 except:
     raise ModuleNotFoundError
 
 
 def get_price(code="600000.XSHG"):
     return jqdatasdk.get_price(code,end_date='2018-05-14')
+
+def get_finance_indicator(code="600000.XSHG",date=None,statDate=None):
+    '''
+    得到财务指标，https://www.joinquant.com/help/api/help?name=Stock#%E8%B4%A2%E5%8A%A1%E6%8C%87%E6%A0%87%E6%95%B0%E6%8D%AE
+    :param code:
+    :param date:
+    :param statDate:
+    :return:
+    '''
+    q = jqdatasdk.query(
+        indicator
+        ).filter(
+        indicator.code == code
+        )
+    return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
+
+def get_finance_bank_indicator(code="600000.XSHG",date=None,statDate=None):
+    '''
+    得到银行的专项指标，https://www.joinquant.com/help/api/help?name=Stock#%E9%93%B6%E8%A1%8C%E4%B8%9A%E4%B8%93%E9%A1%B9%E6%8C%87%E6%A0%87
+    :param code:
+    :param date:
+    :param statDate:
+    :return:
+    '''
+    q = jqdatasdk.query(
+        bank_indicator
+        ).filter(
+            bank_indicator.code == code
+        )
+    return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
+
+
+def get_finance_security_indicator(code="600000.XSHG",date=None,statDate=None):
+    '''
+    得到券商的专项指标，说明https://www.joinquant.com/help/api/help?name=Stock#%E5%88%B8%E5%95%86%E4%B8%9A%E4%B8%93%E9%A1%B9%E6%8C%87%E6%A0%87
+    :param code:
+    :param date:
+    :param statDate:
+    :return:
+    '''
+    q = jqdatasdk.query(
+        security_indicator
+        ).filter(
+        security_indicator.code == code
+        )
+    return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
+
+def get_insurance_security_indicator(code="600000.XSHG",date=None,statDate=None):
+    '''
+    得到保险的专项指标，说明https://www.joinquant.com/help/api/help?name=Stock#%E4%BF%9D%E9%99%A9%E4%B8%9A%E4%B8%93%E9%A1%B9%E6%8C%87%E6%A0%87
+    :param code:
+    :param date:
+    :param statDate:
+    :return:
+    '''
+    q = jqdatasdk.query(
+        insurance_indicator
+        ).filter(
+        insurance_indicator.code == code
+        )
+    return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
+
+def QA_fetch_get_stock_industry(security, date=None):
+    '''
+    得到股票的行业，todo:待完成
+    :param security:
+    :param date:
+    :return:
+    '''
+    return jqdatasdk.get_industry(security, date)
+
+def QA_fetch_industry_stocks(industry_code, date=None):
+    '''
+    得到行业的成分股 todo:
+    :param industry_code:
+    :param date:
+    :return:
+    '''
+    return jqdatasdk.get_industry_stocks(industry_code, date)
+
 
 
 
