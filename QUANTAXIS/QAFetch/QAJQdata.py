@@ -15,7 +15,7 @@ except:
 def get_price(code="600000.XSHG"):
     return jqdatasdk.get_price(code,end_date='2018-05-14')
 
-def get_finance_indicator(code="600000.XSHG",date=None,statDate=None):
+def QA_fetch_get_finance_indicator(code="600000.XSHG",date=None,statDate=None):
     '''
     得到财务指标，https://www.joinquant.com/help/api/help?name=Stock#%E8%B4%A2%E5%8A%A1%E6%8C%87%E6%A0%87%E6%95%B0%E6%8D%AE
     :param code:
@@ -30,7 +30,22 @@ def get_finance_indicator(code="600000.XSHG",date=None,statDate=None):
         )
     return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
 
-def get_finance_bank_indicator(code="600000.XSHG",date=None,statDate=None):
+
+def QA_fetch_get_valuation(code_list=["600000.XSHG"],date=None):
+    '''
+    https://www.joinquant.com/help/api/help?name=Stock#%E5%B8%82%E5%80%BC%E6%95%B0%E6%8D%AE
+    :param code:
+    :param date:
+    :return:
+    '''
+    q = jqdatasdk.query(
+        jqdatasdk.valuation
+        ).filter(
+        jqdatasdk.valuation.code.in_(code_list)
+        )
+    return jqdatasdk.get_fundamentals(q,date=date)
+
+def QA_fetch_get_finance_bank_indicator(code="600000.XSHG",date=None,statDate=None):
     '''
     得到银行的专项指标，https://www.joinquant.com/help/api/help?name=Stock#%E9%93%B6%E8%A1%8C%E4%B8%9A%E4%B8%93%E9%A1%B9%E6%8C%87%E6%A0%87
     :param code:
@@ -46,7 +61,7 @@ def get_finance_bank_indicator(code="600000.XSHG",date=None,statDate=None):
     return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
 
 
-def get_finance_security_indicator(code="600000.XSHG",date=None,statDate=None):
+def QA_fetch_get_finance_security_indicator(code="600000.XSHG",date=None,statDate=None):
     '''
     得到券商的专项指标，说明https://www.joinquant.com/help/api/help?name=Stock#%E5%88%B8%E5%95%86%E4%B8%9A%E4%B8%93%E9%A1%B9%E6%8C%87%E6%A0%87
     :param code:
@@ -61,7 +76,7 @@ def get_finance_security_indicator(code="600000.XSHG",date=None,statDate=None):
         )
     return jqdatasdk.get_fundamentals(q,date=date,statDate=statDate)
 
-def get_insurance_security_indicator(code="600000.XSHG",date=None,statDate=None):
+def QA_fetch_get_insurance_security_indicator(code="600000.XSHG",date=None,statDate=None):
     '''
     得到保险的专项指标，说明https://www.joinquant.com/help/api/help?name=Stock#%E4%BF%9D%E9%99%A9%E4%B8%9A%E4%B8%93%E9%A1%B9%E6%8C%87%E6%A0%87
     :param code:

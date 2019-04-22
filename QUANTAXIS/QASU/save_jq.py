@@ -7,7 +7,8 @@ import pandas as pd
 import pymongo
 
 import QUANTAXIS as QA
-from QUANTAXIS.QAFetch.QAJQdata import QA_fetch_industry_stocks, get_finance_bank_indicator, QA_fetch_get_stock_industry
+from QUANTAXIS.QAFetch.QAJQdata import QA_fetch_industry_stocks, QA_fetch_get_finance_bank_indicator, \
+    QA_fetch_get_stock_industry, QA_fetch_get_valuation
 from QUANTAXIS.QAFetch.QATdx import QA_fetch_get_stock_list
 from QUANTAXIS.QAUtil import (DATABASE, QA_util_date_stamp,
                               QA_util_get_real_date, QA_util_log_info,
@@ -232,7 +233,7 @@ def QA_SU_save_finance_bank_indicator(client=DATABASE, ui_log=None, ui_progress=
                         end_time),
                         ui_log=ui_log,
                     )
-                __data=get_finance_bank_indicator(code=code,statDate=statDate)
+                __data=QA_fetch_get_finance_bank_indicator(code=code,statDate=statDate)
                 if len(__data)>=1:
                     coll.insert_many(QA_util_to_json_from_pandas(__data))
         except Exception as e:
@@ -258,6 +259,78 @@ def QA_SU_save_finance_bank_indicator(client=DATABASE, ui_log=None, ui_progress=
         strProgress = "DOWNLOAD PROGRESS {} ".format(
             str(float(count / len(code_list)/20 * 100))[0:4] + "%")
         intProgress = int(count / len(code_list) * 10000.0)
+
+        QA_util_log_info(
+            strProgress,
+            ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=intProgress
+        )
+        count = count + 1
+    if len(err) < 1:
+        QA_util_log_info("SUCCESS", ui_log=ui_log)
+    else:
+        QA_util_log_info(" ERROR CODE \n ", ui_log=ui_log)
+        QA_util_log_info(err, ui_log=ui_log)
+
+
+
+def QA_SU_save_valuation(client=DATABASE, ui_log=None, ui_progress=None):
+    """
+    保存银行的市值
+    """
+    # 股票代码格式化
+    code_list = QA_fetch_industry_stocks('801192')
+    # code_list = ['600000.XSHG']
+
+    coll = client.valuation
+    coll.create_index([
+        ("code", pymongo.ASCENDING),
+        ("day", pymongo.ASCENDING)
+    ])
+    err = []
+
+    def __saving_work(code,day, coll):
+        QA_util_log_info(
+            "##JOB_valuation Now Saving valuation ==== {}".format(code), ui_log=ui_log)
+        try:
+            col_filter = {"code": str(code),'day':day}
+            end_time = str(now_time())[0:19]
+            if coll.count_documents(col_filter) > 0:
+                pass
+            else:
+                QA_util_log_info(
+                    "##JOB_valuation.Now Saving {} == {}".format(
+                        str(code)[0:6],
+                        end_time),
+                        ui_log=ui_log,
+                    )
+                __data=QA_fetch_get_valuation(code_list=code,date=day)
+                if len(__data)>=1:
+                    coll.insert_many(QA_util_to_json_from_pandas(__data))
+        except Exception as e:
+            QA_util_log_info(e, ui_log=ui_log)
+            err.append(code)
+            QA_util_log_info(err, ui_log=ui_log)
+
+    # __saving_work(code_list[0],coll)
+    # # 聚宽之多允许三个线程连接
+    executor = ThreadPoolExecutor(max_workers=2)
+    date_list=QA.trade_date_sse[QA.trade_date_sse.index('2018-12-03'):QA.trade_date_sse.index(now_time()[0:10])]
+    res = {
+        executor.submit(__saving_work, code_list,j_, coll) for j_ in date_list
+    }
+    count = 0
+    for i_ in concurrent.futures.as_completed(res):
+        QA_util_log_info(
+            'The {} of Total {}'.format(count,
+                                        len(date_list)),
+            ui_log=ui_log
+        )
+
+        strProgress = "DOWNLOAD PROGRESS {} ".format(
+            str(float(count / len(date_list) * 100))[0:4] + "%")
+        intProgress = int(count / len(date_list) * 10000.0)
 
         QA_util_log_info(
             strProgress,
@@ -346,4 +419,5 @@ def QA_SU_save_industry_stocks(client=DATABASE, ui_log=None, ui_progress=None):
 if __name__ == "__main__":
     # QA_SU_save_stock_min()
     # QA_SU_save_finance_bank_indicator()
-    QA_SU_save_industry_stocks()
+    # QA_SU_save_industry_stocks()
+    QA_SU_save_valuation()
