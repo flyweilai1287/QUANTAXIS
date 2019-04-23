@@ -110,6 +110,19 @@ def QA_fetch_industry_stocks(industry_code, date=None):
     return jqdatasdk.get_industry_stocks(industry_code, date)
 
 
+def QA_fetch_holder_num(code, date,limit=100):
+    '''
+    获取上市公司全部股东户数，A股股东、B股股东、H股股东的持股户数
+    :param industry_code:
+    :param date:
+    :return:
+    '''
+    finance=jqdatasdk.finance
+    q = jqdatasdk.query(finance.STK_HOLDER_NUM).filter(finance.STK_HOLDER_NUM.code == code,
+                                             finance.STK_HOLDER_NUM.pub_date >=date).limit(limit)
+    return finance.run_query(q)
+
+
 
 
 if __name__ =='__main__':

@@ -8,7 +8,7 @@ import pymongo
 
 import QUANTAXIS as QA
 from QUANTAXIS.QAFetch.QAJQdata import QA_fetch_industry_stocks, QA_fetch_get_finance_bank_indicator, \
-    QA_fetch_get_stock_industry, QA_fetch_get_valuation
+    QA_fetch_get_stock_industry, QA_fetch_get_valuation, QA_fetch_holder_num
 from QUANTAXIS.QAFetch.QATdx import QA_fetch_get_stock_list
 from QUANTAXIS.QAUtil import (DATABASE, QA_util_date_stamp,
                               QA_util_get_real_date, QA_util_log_info,
@@ -416,8 +416,126 @@ def QA_SU_save_industry_stocks(client=DATABASE, ui_log=None, ui_progress=None):
         QA_util_log_info(" ERROR CODE \n ", ui_log=ui_log)
         QA_util_log_info(err, ui_log=ui_log)
 
+
+
+def QA_SU_save_holder_num(client=DATABASE, ui_log=None, ui_progress=None):
+    """
+    获取上市公司全部股东户数，A股股东、B股股东、H股股东的持股户数
+    """
+
+    # 股票代码格式化
+    code_list = list(
+        map(
+            lambda x: x + ".XSHG" if x[0] == "6" else x + ".XSHE",
+            QA.QA_fetch_stock_list().code.unique().tolist(),
+        ))
+    # code_list=['600000.XSHG']
+    coll = client.holder_num
+    err = []
+
+    def __transform_jq_to_qa(df, code):
+        """
+        处理 jqdata 分钟数据为 qa 格式，并存入数据库
+          id         code    end_date    pub_date share_holders a_share_holders  \
+0  139  000002.XSHE  2014-12-31  2015-03-31        496922          496907
+
+b_share_holders h_share_holders
+0             NaN              15
+1             NaN              17
+        """
+
+        if df is None or len(df) == 0:
+            raise ValueError("没有聚宽数据")
+
+        df["code"] = code
+        df["end_date"] = df.end_date.map(str).str.slice(0, 10)
+        df["pub_date"] = df.pub_date.map(str).str.slice(0, 10)
+        df["datetime"]=str(now_time())[0:19]
+        return df
+
+
+    def __saving_work(code,date,coll):
+        QA_util_log_info(
+            "##JOB_holder_num Now Saving stock_list ==== {}".format(code), ui_log=ui_log)
+        try:
+            col_filter = {"code": str(code)[0:6]}
+            end_time = str(now_time())[0:19]
+            ref_ = coll.find(col_filter)
+            if coll.count_documents(col_filter) > 0:
+                start_time = ref_[coll.count_documents(
+                    col_filter) - 1]["datetime"]
+                QA_util_log_info(
+                    "##JOB_holder_num.Now Saving {} from {} to {}".format(
+                        str(code)[0:6],
+                        start_time,
+                        end_time,
+                    ),
+                    ui_log=ui_log,
+                )
+                if start_time != end_time:
+                    df = QA_fetch_holder_num(code=code,date=start_time,limit=1000)
+                    __data = __transform_jq_to_qa(
+                        df, code=code[:6])
+                    if len(__data) > 1:
+                        coll.insert_many(
+                            QA_util_to_json_from_pandas(__data)[1::])
+            else:
+                start_time = "2015-01-01 09:30:00"
+                QA_util_log_info(
+                    "##JOB_holder_num.Now Saving {} from {} to {}".format(
+                        str(code)[0:6],
+                        start_time,
+                        end_time
+                    ),
+                    ui_log=ui_log,
+                )
+                if start_time != end_time:
+                    df = QA_fetch_holder_num(code=code, date=start_time, limit=1000)
+                    __data = __transform_jq_to_qa(
+                        df, code=code[:6])
+                    if len(__data) > 1:
+                        coll.insert_many(
+                            QA_util_to_json_from_pandas(__data)[1::])
+        except Exception as e:
+            QA_util_log_info(e, ui_log=ui_log)
+            err.append(code)
+            QA_util_log_info(err, ui_log=ui_log)
+
+    # __saving_work(code_list[0],coll)
+    # # 聚宽之多允许三个线程连接
+    executor = ThreadPoolExecutor(max_workers=2)
+    res = {
+        executor.submit(__saving_work, code_list[i_],str(now_time())[0:10],coll)
+        for i_ in range(len(code_list))
+    }
+    count = 0
+    for i_ in concurrent.futures.as_completed(res):
+        QA_util_log_info(
+            'The {} of Total {}'.format(count,
+                                        len(code_list)),
+            ui_log=ui_log
+        )
+
+        strProgress = "DOWNLOAD PROGRESS {} ".format(
+            str(float(count / len(code_list) * 100))[0:4] + "%")
+        intProgress = int(count / len(code_list) * 10000.0)
+
+        QA_util_log_info(
+            strProgress,
+            ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=intProgress
+        )
+        count = count + 1
+    if len(err) < 1:
+        QA_util_log_info("SUCCESS", ui_log=ui_log)
+    else:
+        QA_util_log_info(" ERROR CODE \n ", ui_log=ui_log)
+        QA_util_log_info(err, ui_log=ui_log)
+
 if __name__ == "__main__":
     # QA_SU_save_stock_min()
     # QA_SU_save_finance_bank_indicator()
     # QA_SU_save_industry_stocks()
-    QA_SU_save_valuation()
+    # QA_SU_save_valuation()
+    QA_SU_save_holder_num()
