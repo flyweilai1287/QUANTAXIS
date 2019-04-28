@@ -419,5 +419,5 @@ def QA_SU_save_industry_stocks(client=DATABASE, ui_log=None, ui_progress=None):
 if __name__ == "__main__":
     # QA_SU_save_stock_min()
     # QA_SU_save_finance_bank_indicator()
-    # QA_SU_save_industry_stocks()
-    QA_SU_save_valuation()
+    QA_SU_save_industry_stocks()
+    # QA_SU_save_valuation()

@@ -209,7 +209,7 @@ class QA_Setting():
 QASETTING = QA_Setting()
 DATABASE = QASETTING.client.quantaxis
 DATABASE_ASYNC = QASETTING.client_async.quantaxis
-
+jq_auth_status = False
 
 def exclude_from_stock_ip_list(exclude_ip_list):
     """ 从stock_ip_list删除列表exclude_ip_list中的ip

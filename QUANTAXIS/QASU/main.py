@@ -339,6 +339,9 @@ def QA_SU_save_stock_block(engine, client=DATABASE):
     engine = select_save_engine(engine)
     engine.QA_SU_save_stock_block(client=client)
 
+def QA_SU_save_jq_data(engine,method, client=DATABASE):
+    engine = select_save_engine(engine)
+    eval("engine.QA_SU_save_%s(client=client)" %(method))
 
 def select_save_engine(engine, paralleled=False):
     '''
@@ -427,3 +430,5 @@ def QA_SU_save_stock_divyield_day():
 
 def QA_SU_save_stock_divyield_his():
     return save_stock_divyield.QA_SU_save_stock_divyield_his()
+
+
