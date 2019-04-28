@@ -63,8 +63,8 @@ from QUANTAXIS.QASU.main import (
     QA_SU_save_report_calendar_day,
     QA_SU_save_report_calendar_his,
     QA_SU_save_stock_divyield_day,
-    QA_SU_save_stock_divyield_his
-)
+    QA_SU_save_stock_divyield_his,
+    QA_SU_save_jq_data)
 from QUANTAXIS.QASU.save_binance import QA_SU_save_binance_symbol, QA_SU_save_binance_1hour, \
     QA_SU_save_binance_1day, QA_SU_save_binance_1min, QA_SU_save_binance
 from QUANTAXIS.QASU.save_bitmex import QA_SU_save_bitmex_symbol, QA_SU_save_bitmex
@@ -383,6 +383,9 @@ class CLI(cmd.Cmd):
                 QA_SU_save_future_day_all('tdx')
                 QA_SU_save_future_min_all('tdx')
                 QA_SU_save_future_list('tdx')
+            elif len(arg) == 2 and arg[0] == "jq":
+                QA_SU_save_jq_data('jq',arg[1])
+
             else:
                 for i in arg:
                     if i == 'insert_user':
