@@ -217,11 +217,20 @@ def QA_SU_save_finance_bank_indicator(client=DATABASE, ui_log=None, ui_progress=
     ])
     err = []
 
+    def __transform_jq_to_qa(df, code):
+
+        if df is None or len(df) == 0:
+            raise ValueError("没有聚宽数据")
+
+        df["code"] = str(code)[0:6]
+        df["datetime"] = str(now_time())[0:19]
+        return df
+
     def __saving_work(code,statDate, coll):
         QA_util_log_info(
             "##JOB_bank_indicator Now Saving bank_indicator ==== {}".format(code), ui_log=ui_log)
         try:
-            col_filter = {"code": str(code),'statDate':statDate}
+            col_filter = {"code": str(code)[0:6],'statDate':statDate+'-12-31'}
             ref_ = coll.find(col_filter)
             end_time = str(now_time())[0:19]
             if coll.count_documents(col_filter) > 0:
@@ -233,9 +242,11 @@ def QA_SU_save_finance_bank_indicator(client=DATABASE, ui_log=None, ui_progress=
                         end_time),
                         ui_log=ui_log,
                     )
-                __data=QA_fetch_get_finance_bank_indicator(code=code,statDate=statDate)
-                if len(__data)>=1:
+                __data = __data = __transform_jq_to_qa(
+                    QA_fetch_get_finance_bank_indicator(code=code, statDate=statDate), code=code[:6])
+                if len(__data) >= 1:
                     coll.insert_many(QA_util_to_json_from_pandas(__data))
+
         except Exception as e:
             QA_util_log_info(e, ui_log=ui_log)
             err.append(code)
@@ -535,7 +546,7 @@ b_share_holders h_share_holders
 
 if __name__ == "__main__":
     # QA_SU_save_stock_min()
-    # QA_SU_save_finance_bank_indicator()
+    QA_SU_save_finance_bank_indicator()
     # QA_SU_save_industry_stocks()
     # QA_SU_save_valuation()
-    QA_SU_save_holder_num()
+    # QA_SU_save_holder_num()
