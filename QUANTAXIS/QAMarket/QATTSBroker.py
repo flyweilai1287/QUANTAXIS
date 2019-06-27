@@ -221,18 +221,16 @@ class QA_TTSBroker(QA_Broker):
                 df.order_time = df.order_time.apply(
                     lambda x: '{} {}'.format(
                         datetime.date.today().strftime('%Y-%m-%d'),
-                        datetime.datetime.strptime(x,
-                                                   '%H%M%S').
-                        strftime('%H:%M:%S')
+                        datetime.datetime.strptime(x,'%H:%M:%S').strftime('%H:%M:%S')
+                        if ':' in str(x) else  datetime.datetime.strptime(x,'%H%M%S').strftime('%H:%M:%S')
                     )
                 )
             if hasattr(df, 'trade_time'):
                 df.trade_time = df.trade_time.apply(
                     lambda x: '{} {}'.format(
                         datetime.date.today().strftime('%Y-%m-%d'),
-                        datetime.datetime.strptime(x,
-                                                   '%H%M%S').
-                        strftime('%H:%M:%S')
+                        datetime.datetime.strptime(x, '%H:%M:%S').strftime('%H:%M:%S')
+                        if ':' in str(x) else datetime.datetime.strptime(x, '%H%M%S').strftime('%H:%M:%S')
                     )
                 )
             if hasattr(df, 'realorder_id'):
