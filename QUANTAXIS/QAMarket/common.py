@@ -92,7 +92,18 @@ cn_en_compare = {'明细': 'id',
                  '出错信息': 'error',
                  '': 'other',
                  '签署时间': 'trade_time',
-                 '成交时间': 'trade_time'}
+                 '成交时间': 'trade_time',
+                 '保留信息': 'baoliu_1',
+                 #####资金相关的中文
+                 '冻结资金':'frozen_money',
+                 '可取资金':'cash_out_money',
+                 '可用资金':'available_money',
+                 '总资产':'total_asset',
+                 '资金余额':'balance_money',
+                #####
+                 '交易所代码':'market_code',
+                 '帐号类别':'account_type'
+                 }
 
 
 trade_towards_cn_en = {

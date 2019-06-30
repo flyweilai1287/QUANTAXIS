@@ -176,7 +176,7 @@ class QA_TTSBroker(QA_Broker):
 
         if self._transport_enc:
             decoded_text = self.decrypt(text)
-            # print(decoded_text)
+            print('params:',params,decoded_text)
             return json.loads(decoded_text)
         else:
             return json.loads(text)
