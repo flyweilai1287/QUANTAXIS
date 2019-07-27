@@ -5,6 +5,11 @@ from QUANTAXIS.QAUtil import QASETTING
 from QUANTAXIS.QAUtil.QASetting import jq_auth_status
 import jqdatasdk
 
+try:
+    import jqdatasdk
+    #jqdatasdk.auth(input('account:'),input('password:'))
+except:
+    raise ModuleNotFoundError
 
 
 def need_login(func):
