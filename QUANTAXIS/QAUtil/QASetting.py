@@ -82,14 +82,14 @@ class QA_Setting():
             config.read(CONFIGFILE_PATH)
 
             try:
-                res = config.get('MONGODB', 'uri')
+                res = config.get('MONGODB', 'mjk_uri')
             except:
                 res = DEFAULT_DB_URI
 
         else:
             config = configparser.ConfigParser()
             config.add_section('MONGODB')
-            config.set('MONGODB', 'uri', 'mongodb://localhost:27017')
+            config.set('MONGODB', 'mjk_uri', 'mongodb://localhost:27017')
             f = open('{}{}{}'.format(setting_path, os.sep, 'config.ini'), 'w')
             config.write(f)
             res = DEFAULT_DB_URI
