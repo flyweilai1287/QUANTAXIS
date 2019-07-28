@@ -345,4 +345,8 @@ class Test_QA_Fetch(unittest.TestCase):
             #print(type(open_price1), type(close_price1) ,type(high_price1), type(low_price1), type(volume1), type(amount1), type(date1))
         pass
 
+    def test_QA_fetch_get_stock_realtime(self):
+        df=QATdx.QA_fetch_get_stock_realtime('tdx','000001')
+        # print(df)
+        self.assertEqual(1,1)
     pass

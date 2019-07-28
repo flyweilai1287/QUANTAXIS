@@ -50,12 +50,33 @@ class QA_Setting():
         self.lock = Lock()
 
         self.mongo_uri = uri or self.get_mongo()
+        self.mjk_mongo_uri = uri or self.get_mjk_mongo()
         self.username = None
         self.password = None
 
         # 加入配置文件地址
 
     def get_mongo(self):
+        config = configparser.ConfigParser()
+        if os.path.exists(CONFIGFILE_PATH):
+            config.read(CONFIGFILE_PATH)
+
+            try:
+                res = config.get('MONGODB', 'uri')
+            except:
+                res = DEFAULT_DB_URI
+
+        else:
+            config = configparser.ConfigParser()
+            config.add_section('MONGODB')
+            config.set('MONGODB', 'uri', 'mongodb://localhost:27017')
+            f = open('{}{}{}'.format(setting_path, os.sep, 'config.ini'), 'w')
+            config.write(f)
+            res = DEFAULT_DB_URI
+
+        return res
+
+    def get_mjk_mongo(self):
         config = configparser.ConfigParser()
         if os.path.exists(CONFIGFILE_PATH):
             config.read(CONFIGFILE_PATH)
@@ -190,6 +211,10 @@ class QA_Setting():
         return QA_util_sql_mongo_setting(self.mongo_uri)
 
     @property
+    def mjk_client(self):
+        return QA_util_sql_mongo_setting(self.mjk_mongo_uri)
+
+    @property
     def client_async(self):
         return QA_util_sql_async_mongo_setting(self.mongo_uri)
 
@@ -210,6 +235,8 @@ QASETTING = QA_Setting()
 DATABASE = QASETTING.client.quantaxis
 DATABASE_ASYNC = QASETTING.client_async.quantaxis
 jq_auth_status = False
+
+MJK_DATABASE=QASETTING.mjk_client.manjikuai
 
 def exclude_from_stock_ip_list(exclude_ip_list):
     """ 从stock_ip_list删除列表exclude_ip_list中的ip
