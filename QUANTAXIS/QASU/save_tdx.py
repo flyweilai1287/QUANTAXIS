@@ -555,11 +555,13 @@ def QA_SU_save_stock_xdxr(client=DATABASE, ui_log=None, ui_progress=None):
         __saving_work(stock_list[i_], coll)
 
 
-def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None,stock_list=[]):
+def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None,stock_list=[],is_realtime=False):
     """save stock_min
 
     Keyword Arguments:
         client {[type]} -- [description] (default: {DATABASE})
+    added by leo 20190907 is_realtime参数，表示是否实时更新数据，如果为false则交易时间只能得到上一个交易日的分钟线，
+    如果为true则可以得到实时的分钟数据
     """
     if len(stock_list)==0:
         stock_list = QA_fetch_get_stock_list().code.unique().tolist()
@@ -584,7 +586,10 @@ def QA_SU_save_stock_min(client=DATABASE, ui_log=None, ui_progress=None,stock_li
         try:
             for type in ['1min', '5min', '15min', '30min', '60min']:
                 ref_ = coll.find({'code': str(code)[0:6], 'type': type})
-                end_time = str(now_time())[0:19]
+                if is_realtime==False: #added by leo 20190907，True时为实时数据
+                    end_time = str(now_time())[0:19]
+                else:
+                    end_time=str(datetime.datetime.now())[0:19]
                 if ref_.count() > 0:
                     start_time = ref_[ref_.count() - 1]['datetime']
 
