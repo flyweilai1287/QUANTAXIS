@@ -270,9 +270,9 @@ def QA_SU_save_option_commodity_day(engine, client=DATABASE):
     engine.QA_SU_save_option_commodity_day(client=client)
 
 
-def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[]):
+def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[],is_realtime=False):
     """save stock_min
-
+    is_realtime:表示默认是否获取实时数据
     Arguments:
         engine {[type]} -- [description]
 
@@ -281,7 +281,7 @@ def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[]):
     """
 
     engine = select_save_engine(engine)
-    engine.QA_SU_save_stock_min(client=client,stock_list=stock_list)
+    engine.QA_SU_save_stock_min(client=client,stock_list=stock_list,is_realtime=is_realtime)
 
 
 @print_used_time
