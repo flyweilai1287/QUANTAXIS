@@ -1148,7 +1148,9 @@ def QA_SU_save_stock_list(client=DATABASE, ui_log=None, ui_progress=None):
     Keyword Arguments:
         client {[type]} -- [description] (default: {DATABASE})
     """
-    client.drop_collection('stock_list')
+    # modified by leo 20190916 更新表，不直接插入
+    # client.drop_collection('stock_list')
+    # end modified by leo 20190916 更新表，不直接插入
     coll = client.stock_list
     coll.create_index('code')
 
@@ -1162,7 +1164,12 @@ def QA_SU_save_stock_list(client=DATABASE, ui_log=None, ui_progress=None):
         )
         stock_list_from_tdx = QA_fetch_get_stock_list()
         pandas_data = QA_util_to_json_from_pandas(stock_list_from_tdx)
-        coll.insert_many(pandas_data)
+        #modified by leo 20190916 更新表，不直接插入
+        for data in pandas_data:
+            # coll.insert_many(pandas_data)
+            coll.find_one_and_update({'code': str(code)[0:6]},
+                                     {'$set': data},upsert=True)
+        # end modified by leo 20190916 更新表，不直接插入
         QA_util_log_info(
             "完成股票列表获取",
             ui_log=ui_log,
