@@ -1167,7 +1167,7 @@ def QA_SU_save_stock_list(client=DATABASE, ui_log=None, ui_progress=None):
         #modified by leo 20190916 更新表，不直接插入
         for data in pandas_data:
             # coll.insert_many(pandas_data)
-            coll.find_one_and_update({'code': str(code)[0:6]},
+            coll.find_one_and_update({'code': str(data['code'])[0:6]},
                                      {'$set': data},upsert=True)
         # end modified by leo 20190916 更新表，不直接插入
         QA_util_log_info(
