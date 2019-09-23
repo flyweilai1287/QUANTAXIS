@@ -102,7 +102,11 @@ cn_en_compare = {'明细': 'id',
                  '资金余额':'balance_money',
                 #####
                  '交易所代码':'market_code',
-                 '帐号类别':'account_type'
+                 '帐号类别':'account_type',
+
+                 '检查风险标志':'check_risk_flag',
+                 '返回信息':'return_mes',
+                 '(参数)操作数据':'op_data'
                  }
 
 
@@ -126,7 +130,7 @@ order_status_cn_en = {
     '已确认': ORDER_STATUS.QUEUED,  # 新股申购已经被交易端接受
     '场内废单': ORDER_STATUS.FAILED,
     '废单': ORDER_STATUS.FAILED,  # 委托不符合交易规则，被交易端拒绝了
-    '未报': ORDER_STATUS.FAILED,  # 委托还没有被交易端接受
+    '未报': ORDER_STATUS.QUEUED,  # 委托还没有被交易端接受 modified by leo 20190922 未报状态修改为已报的状态。
     '场外废单': ORDER_STATUS.FAILED,
     '已成交': ORDER_STATUS.SUCCESS_ALL,
     '已成': ORDER_STATUS.SUCCESS_ALL,
