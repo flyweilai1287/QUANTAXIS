@@ -109,6 +109,20 @@ def QA_SU_save_etf_list(engine, client=DATABASE):
     engine.QA_SU_save_etf_list(client=client)
 
 
+def QA_SU_save_convertbond_list(engine, client=DATABASE):
+    """save 可转债等交易所上市的债券
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine)
+    engine.QA_SU_save_convertbond_list(client=client)
+
+
 def QA_SU_save_future_list(engine, client=DATABASE):
     """save future_list
 
@@ -329,6 +343,20 @@ def QA_SU_save_etf_day(engine, client=DATABASE, paralleled=False):
     engine = select_save_engine(engine, paralleled=paralleled)
     engine.QA_SU_save_etf_day(client=client)
 
+
+@print_used_time
+def QA_SU_save_convertbond_day(engine, client=DATABASE, paralleled=False):
+    """save 可转债 convertbond_day
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine, paralleled=paralleled)
+    engine.QA_SU_save_convertbond_day(client=client)
 
 def QA_SU_save_etf_min(engine, client=DATABASE):
     """save etf_min

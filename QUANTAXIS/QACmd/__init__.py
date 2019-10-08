@@ -66,6 +66,8 @@ from QUANTAXIS.QASU.main import (
     QA_SU_save_report_calendar_his,
     QA_SU_save_stock_divyield_day,
     QA_SU_save_stock_divyield_his,
+QA_SU_save_convertbond_list,
+QA_SU_save_convertbond_day,
     QA_SU_save_jq_data)
 from QUANTAXIS.QASU.save_binance import QA_SU_save_binance_symbol, QA_SU_save_binance_1hour, \
     QA_SU_save_binance_1day, QA_SU_save_binance_1min, QA_SU_save_binance
@@ -236,6 +238,8 @@ class CLI(cmd.Cmd):
             命令格式：save future_min  : 保存期货分钟线数据 \n\
             命令格式：save etf_day    : 保存ETF日线数据 \n\
             命令格式：save etf_min    : 保存ET分钟数据 \n\
+            命令格式：save convertbond_list    : 保存可转债列表 \n\
+            命令格式：save convertbond_day    : 保存可转债日线数据 \n\
             命令格式：save stock_list : 保存股票列表 \n\
             命令格式：save stock_block: 保存板块 \n\
             命令格式：save stock_info : 保存tushare数据接口获取的股票列表 \n\
@@ -294,6 +298,9 @@ class CLI(cmd.Cmd):
                 # QA_SU_save_report_calendar_his()
                 # QA_SU_save_stock_divyield_his()
 
+                QA_SU_save_convertbond_list('tdx')
+                QA_SU_save_convertbond_day('tdx')
+
             elif len(arg) == 1 and arg[0] == 'day':
                 if QA_Setting().client.quantaxis.user_list.find(
                     {'username': 'admin'}).count() == 0:
@@ -317,6 +324,9 @@ class CLI(cmd.Cmd):
                 # QA_SU_save_stock_divyield_day()
                 # QA_SU_save_report_calendar_day()
 
+                QA_SU_save_convertbond_list('tdx')
+                QA_SU_save_convertbond_day('tdx')
+
             elif len(arg) == 1 and arg[0] == 'min':
                 if QA_Setting().client.quantaxis.user_list.find(
                     {'username': 'admin'}).count() == 0:
@@ -339,7 +349,9 @@ class CLI(cmd.Cmd):
                 # QA_SU_save_stock_block('tdx')
             elif len(arg) == 2 and arg[0] == 'min':
                 QA_SU_save_stock_min('tdx',stock_list=arg[1].split(','))
-
+            elif len(arg)==1 and arg[0]=='convertbond':
+                QA_SU_save_convertbond_list('tdx')
+                QA_SU_save_convertbond_day('tdx')
             elif len(arg) == 1 and arg[0] in ['X', 'x']:
                 if QA_Setting().client.quantaxis.user_list.find(
                     {'username': 'admin'}).count() == 0:

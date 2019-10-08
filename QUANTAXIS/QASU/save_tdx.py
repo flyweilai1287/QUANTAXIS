@@ -45,8 +45,8 @@ from QUANTAXIS.QAFetch.QATdx import (
     QA_fetch_get_stock_min,
     QA_fetch_get_stock_transaction,
     QA_fetch_get_stock_xdxr,
-    select_best_ip
-)
+    select_best_ip,
+    QA_fetch_get_convertbond_day)
 from QUANTAXIS.QAFetch.QATdx import (
     QA_fetch_get_commodity_option_CU_contract_time_to_market,
     QA_fetch_get_commodity_option_SR_contract_time_to_market,
@@ -1015,6 +1015,101 @@ def QA_SU_save_etf_day(client=DATABASE, ui_log=None, ui_progress=None):
         QA_util_log_info(err, ui_log=ui_log)
 
 
+def QA_SU_save_convertbond_day(client=DATABASE, ui_log=None, ui_progress=None):
+    """save convertbond_day
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    __convertbond_list = QA_fetch_get_stock_list('convertbond')
+    # coll = client.convertbond_day
+    coll = client.stock_day #可转债直接保存到stock_day表中，不再新建表了。
+    coll.create_index(
+        [('code',
+          pymongo.ASCENDING),
+         ('date_stamp',
+          pymongo.ASCENDING)]
+    )
+    err = []
+
+    def __saving_work(code, coll):
+
+        try:
+
+            ref_ = coll.find({'code': str(code)[0:6]})
+            end_time = str(now_time())[0:10]
+            if ref_.count() > 0:
+                start_time = ref_[ref_.count() - 1]['date']
+
+                QA_util_log_info(
+                    '##JOB86 Now Saving convertbond_day==== \n Trying updating {} from {} to {}'
+                        .format(code,
+                                start_time,
+                                end_time),
+                    ui_log=ui_log
+                )
+
+                if start_time != end_time:
+                    coll.insert_many(
+                        QA_util_to_json_from_pandas(
+                            QA_fetch_get_convertbond_day(
+                                str(code),
+                                QA_util_get_next_day(start_time),
+                                end_time
+                            )
+                        )
+                    )
+            else:
+                start_time = '1990-01-01'
+                QA_util_log_info(
+                    '##JOB86 Now Saving convertbond_day==== \n Trying updating {} from {} to {}'
+                        .format(code,
+                                start_time,
+                                end_time),
+                    ui_log=ui_log
+                )
+
+                if start_time != end_time:
+                    coll.insert_many(
+                        QA_util_to_json_from_pandas(
+                            QA_fetch_get_convertbond_day(
+                                str(code),
+                                start_time,
+                                end_time
+                            )
+                        )
+                    )
+        except:
+            err.append(str(code))
+
+    for i_ in range(len(__convertbond_list)):
+        # __saving_work('000001')
+        QA_util_log_info(
+            'The {} of Total {}'.format(i_,
+                                        len(__convertbond_list)),
+            ui_log=ui_log
+        )
+
+        strLogProgress = 'DOWNLOAD PROGRESS {} '.format(
+            str(float(i_ / len(__convertbond_list) * 100))[0:4] + '%'
+        )
+        intLogProgress = int(float(i_ / len(__convertbond_list) * 10000.0))
+        QA_util_log_info(
+            strLogProgress,
+            ui_log=ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=intLogProgress
+        )
+
+        __saving_work(__convertbond_list.index[i_][0], coll)
+    if len(err) < 1:
+        QA_util_log_info('SUCCESS', ui_log=ui_log)
+    else:
+        QA_util_log_info(' ERROR CODE \n ', ui_log=ui_log)
+        QA_util_log_info(err, ui_log=ui_log)
+
+
 def QA_SU_save_etf_min(client=DATABASE, ui_log=None, ui_progress=None):
     """save etf_min
 
@@ -1215,6 +1310,40 @@ def QA_SU_save_etf_list(client=DATABASE, ui_log=None, ui_progress=None):
         QA_util_log_info(e, ui_log=ui_log)
         print(" Error save_tdx.QA_SU_save_etf_list exception!")
         pass
+
+def QA_SU_save_convertbond_list(client=DATABASE, ui_log=None, ui_progress=None):
+    """save etf_list
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+    try:
+        QA_util_log_info(
+            '##JOB81 Now Saving BOND_LIST ====',
+            ui_log=ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=5000
+        )
+        convertbond_list_from_tdx = QA_fetch_get_stock_list(type_="convertbond")
+        pandas_data = QA_util_to_json_from_pandas(convertbond_list_from_tdx)
+
+        if len(pandas_data) > 0:
+            # 获取到数据后才进行drop collection 操作
+            client.drop_collection('convertbond_list')
+            coll = client.convertbond_list
+            coll.create_index('code')
+            coll.insert_many(pandas_data)
+        QA_util_log_info(
+            "完成可转债列表获取",
+            ui_log=ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=10000
+        )
+    except Exception as e:
+        QA_util_log_info(e, ui_log=ui_log)
+        print(" Error save_tdx.QA_SU_save_convertbond_list exception!")
+        pass
+
 
 
 def QA_SU_save_stock_block(client=DATABASE, ui_log=None, ui_progress=None):

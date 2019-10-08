@@ -507,6 +507,36 @@ def QA_fetch_stock_name(code, collections=DATABASE.stock_list):
     except Exception as e:
         QA_util_log_info(e)
 
+def QA_fetch_etf_name(code, collections=DATABASE.etf_list):
+    '''
+    added by leo 20191006 增加返回etf的名称
+    :param code:
+    :param collections:
+    :return:
+    '''
+    try:
+        return collections.find_one({'code': code})['name']
+    except Exception as e:
+        QA_util_log_info(e)
+
+def QA_fetch_security_name(code,type, db=DATABASE):
+    '''
+    added by leo 20191006 返回对应的标的的名称
+    :param code:
+    :param collections:
+    :return:
+    '''
+    if type=='etf':
+        collections=db.etf_list
+    elif type=='convertbond':
+        collections=db.convertbond_list
+    else:
+        collections = db.stock_list
+    try:
+        return collections.find_one({'code': code})['name']
+    except Exception as e:
+        QA_util_log_info(e)
+
 
 def QA_fetch_quotation(code, date=datetime.date.today(), db=DATABASE):
     '获取某一只实时5档行情的存储结果'
