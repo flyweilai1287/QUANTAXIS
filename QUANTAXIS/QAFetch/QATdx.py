@@ -61,7 +61,7 @@ def init_fetcher():
 
 
 def ping(ip, port=7709, type_='stock'):
-    api = TdxHq_API(auto_retry=True)  # 增加auto_retry=True参数，表示如果服务器连接断开或者其它的异常情况下，为了保证在偶发的连接断开下自动重连并重新请求数据 2019-03-06
+    api = TdxHq_API()
     apix = TdxExHq_API()
     __time1 = datetime.datetime.now()
     try:
@@ -583,7 +583,7 @@ def for_sz(code):
         return 'stock_cn'
     elif str(code)[0:2] in ['39']:
         return 'index_cn'
-    elif str(code)[0:2] in ['15']:
+    elif str(code)[0:2] in ['15','16','18']: #modified by leo 20191006 将分级A（15开头),lof(16开头),封闭基金(18开头），etf(15开头）统一为etf
         return 'etf_cn'
     elif str(code)[0:3] in ['101', '104', '105', '106', '107', '108', '109',
                             '111', '112', '114', '115', '116', '117', '118', '119',
@@ -597,6 +597,8 @@ def for_sz(code):
             # 127
         # 12xxxx 国债回购
         return 'bond_cn'
+    elif str(code)[0:2] in ['12']: #add by leo 20191006 单独处理可转债12
+        return 'convertbond_cn'
 
     elif str(code)[0:2] in ['20']:
         return 'stockB_cn'
@@ -609,15 +611,14 @@ def for_sh(code):
         return 'stock_cn'
     elif str(code)[0:3] in ['000', '880']:
         return 'index_cn'
-    elif str(code)[0:2] == '51':
+    elif str(code)[0:2]  in[ '51','50',]:#modified by leo 20191006 51开头的有etf，实时申赎货币基金，交易型货币基金，50开头的有lof，分级lof
         return 'etf_cn'
     # 110×××120×××企业债券；
-    # 129×××100×××可转换债券；
-    # 113A股对应可转债 132
-    elif str(code)[0:3] in ['102', '110', '113', '120', '122', '124',
-                            '130', '132', '133', '134', '135', '136',
-                            '140', '141', '143', '144', '147', '148']:
+    # 129×××100×××可转换债券； 这里是不对的
+    elif str(code)[0:3] in ['129',  '120']:
         return 'bond_cn'
+    elif str(code)[0:3] in ['110','100','113']: #added by leo 20191006 增加可转债标记，110,100,113是可转债，上面说的129是可转债是不对的
+        return 'convertbond_cn'
     else:
         return 'undefined'
 
@@ -658,7 +659,14 @@ def QA_fetch_get_stock_list(type_='stock', ip=None, port=None):
             return pd.concat([sz, sh], sort=False).query(
                 'sec=="etf_cn"').sort_index().assign(
                 name=data['name'].apply(lambda x: str(x)[0:6]))
-
+        elif type_ in ['bond', 'BOND']:
+            return pd.concat([sz, sh], sort=False).query(
+                'sec=="bond_cn"').sort_index().assign(
+                name=data['name'].apply(lambda x: str(x)[0:6]))
+        elif type_ in ['convertbond', 'CONBOND']:
+            return pd.concat([sz, sh], sort=False).query(
+                'sec=="convertbond_cn"').sort_index().assign(
+                name=data['name'].apply(lambda x: str(x)[0:6]))
         else:
             return data.assign(
                 code=data['code'].apply(lambda x: str(x))).assign(
@@ -746,10 +754,23 @@ def QA_fetch_get_bond_day(code, start_date, end_date, frequence='day', ip=None,
         lens = QA_util_get_trade_gap(start_date, today_)
 
         code = str(code)
-        data = pd.concat([api.to_df(api.get_security_bars(
-            frequence, _select_bond_market_code(code),
-            code, (int(lens / 800) - i) * 800, 800))
-            for i in range(int(lens / 800) + 1)], axis=0, sort=False)
+        # data = pd.concat([api.to_df(api.get_security_bars(
+        #     frequence, _select_bond_market_code(code),
+        #     code, (int(lens / 800) - i) * 800, 800))
+        #     for i in range(int(lens / 800) + 1)], axis=0, sort=False) #原作者代码
+
+        #################todo: 有点看不懂了，需要完善，是否可以用作者的#################
+        if str(code)[0] in ['5', '1']:  # ETF
+            data = pd.concat([api.to_df(api.get_security_bars(
+                frequence, 1 if str(code)[0] in ['0', '8', '9', '5'] else 0,
+                code, (int(lens / 800) - i) * 800, 800))
+                for i in range(int(lens / 800) + 1)], axis=0, sort=False)
+        else:
+            data = pd.concat([api.to_df(api.get_index_bars(
+                frequence, 1 if str(code)[0] in ['0', '8', '9', '5'] else 0,
+                code, (int(lens / 800) - i) * 800, 800))
+                for i in range(int(lens / 800) + 1)], axis=0, sort=False)
+        #####################end ####################
         data = data.assign(
             date=data['datetime'].apply(lambda x: str(x[0:10]))).assign(
             code=str(code)) \
@@ -860,6 +881,65 @@ def QA_fetch_get_index_day(code, start_date, end_date, frequence='day',
         else:
             data = pd.concat([api.to_df(api.get_index_bars(
                 frequence, 1 if str(code)[0] in ['0', '8', '9', '5'] else 0,
+                code, (int(lens / 800) - i) * 800, 800))
+                for i in range(int(lens / 800) + 1)], axis=0, sort=False)
+        data = data.assign(
+            date=data['datetime'].apply(lambda x: str(x[0:10]))).assign(
+            code=str(code)) \
+            .assign(date_stamp=data['datetime'].apply(
+                lambda x: QA_util_date_stamp(str(x)[0:10]))) \
+            .set_index('date', drop=False, inplace=False) \
+            .assign(code=code) \
+            .drop(['year', 'month', 'day', 'hour',
+                   'minute', 'datetime'], axis=1)[start_date:end_date]
+        return data.assign(date=data['date'].apply(lambda x: str(x)[0:10]))
+
+
+@retry(stop_max_attempt_number=3, wait_random_min=50, wait_random_max=100)
+def QA_fetch_get_convertbond_day(code, start_date, end_date, frequence='day',
+                           ip=None, port=None):
+    """可转债日线
+    1- sh
+    0 -sz
+    Arguments:
+        code {[type]} -- [description]
+        start_date {[type]} -- [description]
+        end_date {[type]} -- [description]
+    Keyword Arguments:
+        frequence {str} -- [description] (default: {'day'})
+        ip {[type]} -- [description] (default: {None})
+        port {[type]} -- [description] (default: {None})
+    Returns:
+        [type] -- [description]
+    """
+
+    ip, port = get_mainmarket_ip(ip, port)
+    api = TdxHq_API()
+    if frequence in ['day', 'd', 'D', 'DAY', 'Day']:
+        frequence = 9
+    elif frequence in ['w', 'W', 'Week', 'week']:
+        frequence = 5
+    elif frequence in ['month', 'M', 'm', 'Month']:
+        frequence = 6
+    elif frequence in ['Q', 'Quarter', 'q']:
+        frequence = 10
+    elif frequence in ['y', 'Y', 'year', 'Year']:
+        frequence = 11
+
+    with api.connect(ip, port):
+
+        start_date = str(start_date)[0:10]
+        today_ = datetime.date.today()
+        lens = QA_util_get_trade_gap(start_date, today_)
+
+        if str(code)[0] in ['1']:  # 可转债
+            data = pd.concat([api.to_df(api.get_security_bars(
+                frequence, 1 if str(code)[0:3] in ['110','100','113'] else 0,
+                code, (int(lens / 800) - i) * 800, 800))
+                for i in range(int(lens / 800) + 1)], axis=0, sort=False)
+        else:
+            data = pd.concat([api.to_df(api.get_index_bars(
+                frequence, 1 if str(code)[0:3] in ['110','100','113'] else 0,
                 code, (int(lens / 800) - i) * 800, 800))
                 for i in range(int(lens / 800) + 1)], axis=0, sort=False)
         data = data.assign(

@@ -31,7 +31,7 @@ by yutiansut
 2017/4/8
 """
 
-__version__ = '1.6.11'
+__version__ = '1.6.11.0'
 __author__ = 'yutiansut'
 
 import argparse
@@ -229,7 +229,9 @@ from QUANTAXIS.QASU.main import (
     QA_SU_save_stock_list,
     QA_SU_save_stock_min,
     QA_SU_save_stock_min_5,
-    QA_SU_save_stock_xdxr
+    QA_SU_save_stock_xdxr,
+QA_SU_save_convertbond_list,
+QA_SU_save_convertbond_day
 )
 from QUANTAXIS.QASU.save_strategy import QA_SU_save_strategy
 from QUANTAXIS.QASU.user import QA_user_sign_in, QA_user_sign_up

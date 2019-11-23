@@ -7437,6 +7437,9 @@ def QA_util_get_trade_datetime(dt=datetime.datetime.now()):
 
     if QA_util_if_trade(str(dt.date())) and dt.time() < datetime.time(15, 0, 0):
         return str(dt.date())
+    elif not QA_util_if_trade(str(dt.date())):
+        dt = dt + datetime.timedelta(days=1)
+        return QA_util_get_trade_datetime(dt)
     else:
         return QA_util_get_real_date(str(dt.date()), trade_date_sse, 1)
 
@@ -7453,6 +7456,9 @@ def QA_util_get_order_datetime(dt):
 
     if QA_util_if_trade(str(dt.date())) and dt.time() < datetime.time(15, 0, 0):
         return str(dt)
+    elif not QA_util_if_trade(str(dt.date())):
+        dt = dt + datetime.timedelta(days=1)
+        return QA_util_get_order_datetime(dt)
     else:
         # print('before')
         # print(QA_util_date_gap(str(dt.date()),1,'lt'))

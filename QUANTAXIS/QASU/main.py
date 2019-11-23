@@ -109,6 +109,20 @@ def QA_SU_save_etf_list(engine, client=DATABASE):
     engine.QA_SU_save_etf_list(client=client)
 
 
+def QA_SU_save_convertbond_list(engine, client=DATABASE):
+    """save 可转债等交易所上市的债券
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine)
+    engine.QA_SU_save_convertbond_list(client=client)
+
+
 def QA_SU_save_future_list(engine, client=DATABASE):
     """save future_list
 
@@ -287,9 +301,9 @@ def QA_SU_save_option_commodity_day(engine, client=DATABASE):
     engine.QA_SU_save_option_commodity_day(client=client)
 
 
-def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[]):
+def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[],is_realtime=False):
     """save stock_min
-
+    is_realtime:表示默认是否获取实时数据
     Arguments:
         engine {[type]} -- [description]
 
@@ -298,50 +312,7 @@ def QA_SU_save_stock_min(engine, client=DATABASE,stock_list=[]):
     """
 
     engine = select_save_engine(engine)
-    engine.QA_SU_save_stock_min(client=client,stock_list=stock_list)
-
-
-def QA_SU_save_stock_transaction(engine, client=DATABASE):
-    """save stock_transaction
-
-    Arguments:
-        engine {[type]} -- [description]
-
-    Keyword Arguments:
-        client {[type]} -- [description] (default: {DATABASE})
-    """
-
-    engine = select_save_engine(engine)
-    engine.QA_SU_save_stock_transaction(client=client)
-
-
-def QA_SU_save_index_transaction(engine, client=DATABASE):
-    """save index_transaction
-
-    Arguments:
-        engine {[type]} -- [description]
-
-    Keyword Arguments:
-        client {[type]} -- [description] (default: {DATABASE})
-    """
-
-    engine = select_save_engine(engine)
-    engine.QA_SU_save_index_transaction(client=client)
-
-
-
-def QA_SU_save_single_stock_min(code, engine, client=DATABASE):
-    """save stock_min
-
-    Arguments:
-        engine {[type]} -- [description]
-
-    Keyword Arguments:
-        client {[type]} -- [description] (default: {DATABASE})
-    """
-
-    engine = select_save_engine(engine)
-    engine.QA_SU_save_single_stock_min(code=code, client=client)
+    engine.QA_SU_save_stock_min(client=client,stock_list=stock_list,is_realtime=is_realtime)
 
 
 @print_used_time
@@ -420,6 +391,20 @@ def QA_SU_save_etf_day(engine, client=DATABASE, paralleled=False):
     engine = select_save_engine(engine, paralleled=paralleled)
     engine.QA_SU_save_etf_day(client=client)
 
+
+@print_used_time
+def QA_SU_save_convertbond_day(engine, client=DATABASE, paralleled=False):
+    """save 可转债 convertbond_day
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine, paralleled=paralleled)
+    engine.QA_SU_save_convertbond_day(client=client)
 
 def QA_SU_save_single_etf_day(code, engine, client=DATABASE, paralleled=False):
     """save etf_day
@@ -586,5 +571,3 @@ def QA_SU_save_stock_divyield_day():
 
 def QA_SU_save_stock_divyield_his():
     return save_stock_divyield.QA_SU_save_stock_divyield_his()
-
-
