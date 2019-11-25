@@ -500,7 +500,7 @@ def QA_fetch_get_stock_realtime(code=['000001', '000002'], ip=None, port=None):
              'ask4',
              'ask_vol4', 'bid4', 'bid_vol4', 'ask5', 'ask_vol5', 'bid5',
              'bid_vol5']]
-        return data.set_index(['datetime', 'code'])
+        return data.set_index(['datetime', 'code'],drop=False)
 
 
 @retry(stop_max_attempt_number=3, wait_random_min=50, wait_random_max=100)
