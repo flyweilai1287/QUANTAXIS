@@ -10,10 +10,13 @@ node_modules/
 .idea/
 *.log
 .vscode/
+.DS_Store*
 *.pdf
 *.gitconfig
 *.rdb
 .ipython/
+.ccls/
+.ccls*
 .matplotlib/
 .log
 *.log
@@ -170,3 +173,14 @@ QUANTAXIS_WEBDRIVER/*
 
 celerybeat*
 dist/*
+
+/data/
+
+/quantaxis_env/
+/huobi_client
+/inc/huobi_client
+/QUANTAXIS/QAFetch/__main__.py
+/QUANTAXIS.pyproj
+/QUANTAXIS/QAAnalysis/QABeyond.py
+/QUANTAXIS/QAAnalysis/QAAnalysis_kline.py
+/QUANTAXIS/.gitignore

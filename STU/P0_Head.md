@@ -97,7 +97,7 @@ QUANTAXIS的核心是构建一个闭环的标准流程(SOP), 面向问题和场�
 
 ### 什么是闭环, 为什么需要闭环
 
-闭环是一个完整解决能力的体现, 包含了一个最小的完整量化流程(想法 - 分析 - 策略 - 回测 - 模拟 - 实盘 - 可视化展示), 依赖于这个闭环, 你可以在生产的任意角度切入并使用这个闭环加速你的流程, 解约时间/人员成本
+闭环是一个完整解决能力的体现, 包含了一个最小的完整量化流程(想法 - 分析 - 策略 - 回测 - 模拟 - 实盘 - 可视化展示), 依赖于这个闭环, 你可以在生产的任意角度切入并使用这个闭环加速你的流程, 节约时间/人员成本
 
 ### 什么是SOP, 为什么需要SOP
 
@@ -148,7 +148,7 @@ QUANTAXIS_RUN 基于rabbitmq/celery的分布式任务部署 (https://github.com/
 
 QUANTAXIS_PUBSUB 基于RABBITMQ的消息分发订阅 (https://github.com/QUANTAXIS/QAPUBSUB)
 
-QUANTAXIS_DESKTOP 基于VUE.js/ ELECTRON的 桌面终端 (https://github.com/quantaxisdesign/QADESK_BASIC)
+QUANTAXIS_DESKTOP 基于VUE.js/ ELECTRON的 桌面终端 (https://github.com/quantaxisdesign/qamazing_community)
 
 QUANTAXIS QADESKPRO 新版本客户端网页(部分开源) (https://github.com/yutiansut/qadeskpro)
 

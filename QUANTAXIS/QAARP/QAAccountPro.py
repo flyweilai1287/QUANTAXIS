@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2019 yutiansut/QUANTAXIS
+# Copyright (c) 2016-2021 yutiansut/QUANTAXIS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ from QUANTAXIS.QAMarket.QAPosition import QA_Position
 from QUANTAXIS.QASU.save_account import save_account, update_account
 from QUANTAXIS.QAUtil.QASetting import DATABASE
 from QUANTAXIS.QAUtil.QADate_trade import (
+    QA_util_if_trade,
     QA_util_get_next_day,
     QA_util_get_trade_range
 )
@@ -417,6 +418,13 @@ class QA_AccountPRO(QA_Worker):
                 )
         else:
             return self.end_
+
+
+    def set_end_date(self, date):
+        if QA_util_if_trade(date):
+            self.end_ = date
+        else:
+            print('error {} not a trade date'.format(date))
 
     @property
     def market_data(self):
